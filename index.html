@@ -11,6 +11,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   
   <link rel="stylesheet" href="styles.css" />
+  
+  <!-- Leaflet Interactive Maps (OpenStreetMap) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 </head>
 <body>
   <!-- Ambient High-Tech Mesh Aura & Grid Backdrop -->
@@ -544,6 +548,171 @@
       </div>
 
     </div>
+
+    <!-- ==========================================
+         SECTION 2: AI PROPERTY SEARCH & CHATBOT
+         ========================================== -->
+    <section class="section-container" id="chatbotSection">
+      <div class="section-intro">
+        <div class="hero-chip">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+          <span>Natural Language Assistant</span>
+        </div>
+        <h2 class="section-title">AI Property Search</h2>
+        <p class="section-subtitle">
+          "Tell me what type of property you want..." Type your request in plain conversational language (e.g. <em>"I want a 2 BHK in Mumbai under 80 lakh near metro"</em>). The assistant will extract your requirements, search properties, apply the price prediction model, and display locations on the interactive map.
+        </p>
+      </div>
+
+      <div class="chat-card">
+        <!-- Chat Dialogue History -->
+        <div class="chat-thread" id="chatThread">
+          <div class="chat-bubble-row bot">
+            <div class="chat-avatar">🤖</div>
+            <div class="chat-bubble">
+              <p><strong>Hello! I am your AI Property Search Assistant.</strong></p>
+              <p>Tell me what you are looking for—for example: <em>"I want a 2 BHK in Mumbai under 80 lakh near metro"</em> or <em>"3 BHK house in Mumbai near school, hospital and metro"</em>.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Demo Prompt Chips (for fast viva demonstration) -->
+        <div class="quick-prompts-bar">
+          <span class="quick-prompts-title">Try Example Queries:</span>
+          <div class="quick-chips-wrapper">
+            <button type="button" class="quick-chip" data-query="I want a 2 BHK in Mumbai under 80 lakh near metro.">
+              2 BHK in Mumbai under 80 lakh near metro
+            </button>
+            <button type="button" class="quick-chip" data-query="I want a 3 BHK house in Mumbai near school, hospital and metro.">
+              3 BHK house in Mumbai near school, hospital & metro
+            </button>
+            <button type="button" class="quick-chip" data-query="Looking for 3 BHK in Bengaluru near metro and hospital">
+              3 BHK in Bengaluru near metro & hospital
+            </button>
+            <button type="button" class="quick-chip" data-query="4 BHK villa in Delhi NCR with clubhouse and pool">
+              4 BHK villa in Delhi NCR
+            </button>
+            <button type="button" class="quick-chip" data-query="2 BHK flat in Pune under 60 lakh near railway station">
+              2 BHK in Pune under 60 lakh near railway
+            </button>
+            <button type="button" class="quick-chip" data-query="Show 2 BHK properties in Hyderabad near metro">
+              2 BHK in Hyderabad near metro
+            </button>
+          </div>
+        </div>
+
+        <!-- Chat Input Field & Submit Button -->
+        <form id="chatForm" class="chat-form">
+          <div class="chat-input-box">
+            <input 
+              type="text" 
+              id="chatInput" 
+              class="chat-input" 
+              placeholder="Tell me what type of property you want (e.g. 2 BHK in Mumbai under 80 lakh near metro)..." 
+              autocomplete="off"
+            />
+          </div>
+          <button type="submit" id="chatSubmitBtn" class="chat-submit-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <span>Search</span>
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         SECTION 3: RESULTS (PROPERTY CARDS | MAP)
+         ========================================== -->
+    <section class="section-container" id="resultsSection">
+      <div class="section-intro">
+        <div class="hero-chip">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
+            <line x1="8" y1="2" x2="8" y2="18"></line>
+            <line x1="16" y1="6" x2="16" y2="22"></line>
+          </svg>
+          <span>Spatial & Valuation Intelligence</span>
+        </div>
+        <div class="results-title-row">
+          <h2 class="section-title">Results</h2>
+          <span class="results-counter-pill" id="resultsCounterPill">Showing all available properties</span>
+        </div>
+      </div>
+
+      <!-- 2-Column Responsive Layout: Property Cards | Interactive Map -->
+      <div class="results-split-layout">
+        
+        <!-- Left Column: Property Cards -->
+        <div class="cards-column">
+          <div class="column-header">
+            <div>
+              <span class="col-title">Suitable Properties</span>
+              <p class="col-subtitle">Showing predicted price via model and distances to facilities</p>
+            </div>
+            <button type="button" id="showAllPropertiesBtn" class="btn-ghost-sm">Show All (17)</button>
+          </div>
+
+          <div class="property-cards-wrapper" id="propertyCardsWrapper">
+            <!-- Dynamically populated by app.js -->
+          </div>
+        </div>
+
+        <!-- Right Column: Interactive Leaflet Map & Facilities Breakdown -->
+        <div class="map-column">
+          <div class="map-container-card">
+            
+            <div class="map-card-topbar">
+              <div class="map-heading-group">
+                <span class="map-live-tag">Interactive Map • Leaflet + OpenStreetMap</span>
+                <h3 class="map-property-name" id="mapPropertyName">Select a Property</h3>
+                <p class="map-property-meta" id="mapPropertyMeta">Click a property card to preview its location and surrounding landmarks</p>
+              </div>
+              <button type="button" id="fitMapBoundsBtn" class="btn-fit-map" title="Fit property and all nearby facilities into view">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+                </svg>
+                Fit All Markers
+              </button>
+            </div>
+
+            <!-- Legend for easy marker identification -->
+            <div class="map-legend-row">
+              <span class="legend-item"><span class="legend-pin pin-prop">🏠</span> Property</span>
+              <span class="legend-item"><span class="legend-pin pin-school">🏫</span> School</span>
+              <span class="legend-item"><span class="legend-pin pin-hosp">🏥</span> Hospital</span>
+              <span class="legend-item"><span class="legend-pin pin-metro">🚇</span> Metro</span>
+              <span class="legend-item"><span class="legend-pin pin-rail">🚆</span> Railway</span>
+              <span class="legend-item"><span class="legend-pin pin-air">✈️</span> Airport</span>
+            </div>
+
+            <!-- Leaflet Map Container -->
+            <div id="propertyMap" class="leaflet-map-frame"></div>
+
+            <!-- Nearby Important Facilities Breakdown -->
+            <div class="facilities-breakdown-panel">
+              <div class="facilities-panel-header">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="8" x2="12" y2="12"/>
+                  <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                <span>Nearby Facilities from Selected Property:</span>
+              </div>
+              <div class="facilities-badges-grid" id="facilitiesBadgesGrid">
+                <!-- Populated dynamically: School, Hospital, Metro, Railway, Airport with distances -->
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
 
     <!-- Clean Tech Footer -->
     <footer class="global-footer">
